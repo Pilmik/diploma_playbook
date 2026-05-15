@@ -1,0 +1,4 @@
+*.retry
+collections/ansible_collections/
+__pycache__/
+*.log

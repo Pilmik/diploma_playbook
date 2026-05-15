@@ -1,0 +1,8 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+{% for rule in acl_rules %}
+-A FORWARD -p {{ rule.protocol }}{% if rule.protocol == 'icmp' %} --icmp-type echo-request{% endif %} -s {{ rule.source }} -d {{ rule.destination }} -j {{ 'ACCEPT' if rule.action == 'permit' else 'DROP' }}  {# {{ rule.name }} #}
+{% endfor %}
+COMMIT
