@@ -32,8 +32,8 @@
         src: templates/acl.iptables.j2
         dest: /tmp/acl.iptables
 
-    - name: "Step 6 | Apply ACL via iptables-restore"
-      ansible.builtin.shell: iptables-restore < /tmp/acl.iptables
+    - name: "Step 6 | Apply ACL by running iptables commands"
+      ansible.builtin.shell: sh /tmp/acl.iptables
 
     - name: "Step 6 | Read applied FORWARD chain rules"
       ansible.builtin.command: iptables -L FORWARD -n --line-numbers
