@@ -1,7 +1,2 @@
 plugin: networktocode.nautobot.inventory
 validate_certs: false
-config_context: false
-group_by:
-  - device_roles
-device_query_filters:
-  - has_primary_ip: 'true'

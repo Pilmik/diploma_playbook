@@ -1,44 +1,45 @@
-- [cite_start]name: Deploy ACL on dc_gateway [cite: 1]
+---
+- name: Deploy ACL on dc_gateway
   hosts: dc_gateway
   gather_facts: false
 
   vars:
-    [cite_start]nautobot_url: "{{ lookup('env', 'NAUTOBOT_URL') }}" [cite: 1]
-    [cite_start]nautobot_token: "{{ lookup('env', 'NAUTOBOT_TOKEN') }}" [cite: 1]
+    nautobot_url: "{{ lookup('env', 'NAUTOBOT_URL') }}"
+    nautobot_token: "{{ lookup('env', 'NAUTOBOT_TOKEN') }}"
 
   tasks:
-    - [cite_start]name: "Step 4 | Request dc_gateway config context from Nautobot" [cite: 1]
+    - name: "Step 4 | Fetch dc_gateway config context from Nautobot"
       ansible.builtin.uri:
-        [cite_start]url: "{{ nautobot_url }}/api/dcim/devices/?name=dc_gateway" [cite: 1]
-        [cite_start]method: GET [cite: 1]
+        url: "{{ nautobot_url }}/api/dcim/devices/?name=dc_gateway"
+        method: GET
         headers:
-          [cite_start]Authorization: "Token {{ nautobot_token }}" [cite: 1]
-          [cite_start]Accept: "application/json" [cite: 2]
-        [cite_start]return_content: true [cite: 2]
-      [cite_start]register: nb_response [cite: 2]
-      [cite_start]delegate_to: localhost [cite: 2]
+          Authorization: "Token {{ nautobot_token }}"
+          Accept: "application/json"
+        return_content: true
+      register: nb_response
+      delegate_to: localhost
 
-    - [cite_start]name: "Step 4 | Extract access matrix from config context" [cite: 2]
+    - name: "Step 4 | Extract access matrix from config context"
       ansible.builtin.set_fact:
-        [cite_start]acl_rules: "{{ nb_response.json.results[0].local_config_context_data.acl_rules }}" [cite: 2]
+        acl_rules: "{{ nb_response.json.results[0].local_config_context_data.acl_rules }}"
 
-    - [cite_start]name: "Step 4 | Retrieved access control rules" [cite: 2]
+    - name: "Step 4 | Retrieved access control rules"
       ansible.builtin.debug:
-        [cite_start]var: acl_rules [cite: 2]
+        var: acl_rules
 
-    - [cite_start]name: "Step 5 | Generate iptables rules file from template" [cite: 3]
+    - name: "Step 5 | Render iptables rules file from template"
       ansible.builtin.template:
-        [cite_start]src: templates/acl.iptables.j2 [cite: 3]
-        [cite_start]dest: /tmp/acl.iptables [cite: 3]
+        src: templates/acl.iptables.j2
+        dest: /tmp/acl.iptables
 
-    - [cite_start]name: "Step 6 | Apply ACL using iptables-restore" [cite: 4]
-      [cite_start]ansible.builtin.shell: iptables-restore < /tmp/acl.iptables [cite: 4]
+    - name: "Step 6 | Apply ACL via iptables-restore"
+      ansible.builtin.shell: iptables-restore < /tmp/acl.iptables
 
-    - [cite_start]name: "Step 6 | Read applied FORWARD chain rules" [cite: 5]
-      [cite_start]ansible.builtin.command: iptables -L FORWARD -n --line-numbers [cite: 5]
-      [cite_start]register: iptables_state [cite: 5]
-      [cite_start]changed_when: false [cite: 5]
+    - name: "Step 6 | Read applied FORWARD chain rules"
+      ansible.builtin.command: iptables -L FORWARD -n --line-numbers
+      register: iptables_state
+      changed_when: false
 
-    - [cite_start]name: "Summary | Current FORWARD chain state on dc_gateway" [cite: 6]
+    - name: "Summary | Current FORWARD chain state on dc_gateway"
       ansible.builtin.debug:
-        [cite_start]var: iptables_state.stdout_lines [cite: 6]
+        var: iptables_state.stdout_lines
